@@ -1,97 +1,144 @@
 #!/bin/bash
 
-# check for sudo/root first, make sure to have priviliges to install stuff and configure
+# check for sudo/root first, make sure to have privileges to install stuff and configure
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root or with sudo."
    exit 1
 fi
 
-function install_edc {
-  git clone https://github.com/stereum-dev/ethereum2-docker-compose.git "$choice_install_path"
+dialog_title="Stereum Control Center"
+stereum_config_file_path=/etc/stereum/ethereum2.yaml
 
-  if [[ "$choice_network" == "mainnet" ]]
-  then
-    git -C "$choice_install_path" checkout mainnet
-  fi
-}
+function dialog_import_wallet() {
+  choice_launchpad_wallet_path=$(dialog --title "$dialog_title" \
+    --inputbox "Please enter the directory of the validator_keys\n(e. g. /home/user/validator_keys):" 9 60 "" \
+    3>&1 1>&2 2>&3)
 
-function confirm_install {
-  dialog --yesno "Installing \"$choice_client\" with settings for network \"$choice_network\" to directory \"$choice_install_path\", is this correct?" 0 0
+  # check launchpad dir
+  # e2dc_launchpad_dir=$e2dc_install_path/launchpad
+  # if [ "$(ls -A "$e2dc_launchpad_dir")" ]
+  # then
+  #   rm -rf $e2dc_launchpad_dir/*
+  # fi
+
+  # cp -R $choice_launchpad_wallet_path $e2dc_launchpad_dir/.
+
+  ansible-playbook $e2a_install_path/import-validator-accounts.yaml -e validator_keys_path="$choice_launchpad_wallet_path"
+
+  dialog --title "$dialog_title" \
+    --msgbox "Import done, necessary services restarted." 5 50
 
   dialog --clear
-  clear
 
+  dialog_main
+}
+
+function dialog_update() {
+  (
+    echo "XXX"; echo "Running update..."; echo "XXX"
+    echo "10"; ansible-playbook $e2a_install_path/update.yaml
+
+    echo "XXX"; echo "Done!"; echo "XXX"
+    echo "100"; sleep 1
+  ) |
+  dialog --title "$dialog_title" \
+    --gauge "Starting update..." \
+    8 40
+
+  dialog --title "$dialog_title" \
+    --msgbox "Update done, services restarted." 5 50
+
+  dialog --clear
+
+  dialog_main
+}
+
+function dialog_restart_host() {
+  dialog --title "$dialog_title" \
+    --yesno "Are you sure to restart the host?" \
+    0 0
   choice=$?
 
-  if [ $choice = 0 ]
-  then
-    install_edc
+  if [ $choice != 0 ]; then
+    dialog --clear
+    dialog_main
+  else
+    dialog --clear
+    reboot
   fi
 }
 
-function edc_install() {
-  choice_client=$(dialog --menu "Please choose the setup to install and configure:" 0 0 0 \
-    "lighthouse-only" "Lighthouse by Sigma Prime" "lodestar-only" "Lodestar by ChainSafe" "multiclient" "Multiclient using Lighthouse, Prysm, Teku with Vouch, Dirk" "nimbus-only" "Nimbus Eth2 by Status" "prysm-only" "Prysm by Prysmatic Labs" "teku-only" "Teku by ConsenSys" 3>&1 1>&2 2>&3)
+function dialog_restart_services() {
+  (
+    echo "XXX"; echo "Restarting services..."; echo "XXX"
+    echo "10"; ansible-playbook $e2a_install_path/restart-services.yaml
+
+    echo "XXX"; echo "Done!"; echo "XXX"
+    echo "100"; sleep 1
+  ) |
+  dialog --title "$dialog_title" \
+    --gauge "Restarting services..." \
+    8 40
+
+  dialog --title "$dialog_title" \
+    --msgbox "Restarting done, services restarted." 5 50
+
   dialog --clear
 
-  choice_network=$(dialog --menu "Please select the network you want to connect to:" 0 0 0 \
-    "mainnet" "Mainnet for real Ether" "pyrmont" "Pyrmont Testnet for Goerli Ether" 3>&1 1>&2 2>&3)
-  dialog --clear
-
-  clear
-
-  confirm_install
+  dialog_main
 }
 
-function main_menu() {
-  choice_main_menu=$(dialog --menu "Stereum's control center v0.0.1-alpha\n\nPlease select" 0 0 0 \
-    "install" "Install ethereum2-docker-compose" \
-    "start" "Start services" \
-    "stop" "Stop services" \
-    "import" "Import launchpad validator keys" \
-    3>&1 1>&2 2>&3)
+function dialog_port_list() {
+  dialog --title "$dialog_title" \
+    --msgbox "Feature not ready yet." 5 50
+
   dialog --clear
 
-  clear
-
-
+  dialog_main
 }
 
-function new_install_path() {
-  choice_install_path=`dialog --inputbox "Please state \nthe installation path (in full):" 0 0 "/opt/ethereum2-docker-compose" \
-    3>&1 1>&2 2>&3`
+function dialog_main() {
+  choice_main=$(dialog --title "$dialog_title - Main Menu" \
+    --menu "" 0 0 0 \
+    "import-wallet" "Import a wallet of launchpad.ethereum.org" \
+    "update" "Update your OS and Stereum Node" \
+    "restart-host" "Restart the server" \
+    "restart-services" "Restart certain services" \
+    "port-list" "List used ports" \
+    "quit" "Quit the Stereum Control Center"
+     3>&1 1>&2 2>&3)
+
   dialog --clear
 
-  if [ -z "$choice_install_path" ]
-  then
+  if [ $choice_main == "import-wallet" ]; then
+    dialog_import_wallet
+  elif [ $choice_main == "update" ]; then
+    dialog_update
+  elif [ $choice_main == "restart-host" ]; then
+    dialog_restart_host
+  elif [ $choice_main == "restart-services" ]; then
+    dialog_restart_services
+  elif [ $choice_main == "port-list" ]; then
+    dialog_port_list
+  elif [ $choice_main == "quit" ]; then
     clear
+    exit 0
+  fi
+}
+
+function check_config() {
+  if [[ -f "$stereum_config_file_path" ]]; then
+    echo "Found config $stereum_config_file_path"
+
+    source helper/yaml.sh
+    create_variables $stereum_config_file_path
+  else
+    echo "No config found at $stereum_config_file_path"
     exit 1
   fi
-
-  if [ -d "$choice_install_path" ]
-  then
-    if [ -d "$choice_install_path/.install-config" ]
-    then
-      # this is an already installed ethereum2-docker-compose
-      dialog --msgbox "Found installation!" 0 0
-      dialog --clear
-    else
-      dialog --yesno "This directory exists already and it doesn't look like an ethereum2-docker-compose install. Any data in this directory might be overwritten. Are you sure to continue?" 0 0
-      choice=$?
-
-      if [ $choice != 0 ]
-      then
-        clear
-        exit 1
-      else
-        edc_install
-      fi
-    fi
-  else
-    edc_install
-  fi
 }
 
-main_menu
+check_config
+dialog_main
 
 #EOF

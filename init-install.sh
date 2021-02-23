@@ -4,6 +4,7 @@
 # curl -s http://rocklogic.at/tmp/stereum-setup-guided.sh | bash
 
 dialog_title="Stereum Node Installation"
+stereum_config_file_path=/etc/stereum/ethereum2.yaml
 
 # check for necessary packages for installing stereum
 function check_dependencies() {
@@ -22,6 +23,8 @@ function install_config() {
   mkdir -p /etc/stereum
 
   echo "e2dc_install_path: $install_path/ethereum2-docker-compose
+e2a_install_path: $install_path/ethereum2-ansible
+e2ccc_install_path: $install_path/ethereum2-control-center-cli
 stereum_user: stereum
 network: $e2dc_network
 setup: $e2dc_client
@@ -75,9 +78,9 @@ setups:
 # docker settings
 docker_address_pool_base: 172.80.0.0/12
 docker_address_pool_size: 24
-" > /etc/stereum/ethereum2.yaml
+" > $stereum_config_file_path
 
-  chmod +r /etc/stereum/ethereum2.yaml
+  chmod +r $stereum_config_file_path
 }
 
 function install_stereum() {
