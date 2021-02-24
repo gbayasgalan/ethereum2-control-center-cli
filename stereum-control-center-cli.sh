@@ -63,7 +63,7 @@ function dialog_restart_host() {
     dialog --clear
     dialog_main
   else
-    dialog --clear
+    clear
     reboot
   fi
 }
@@ -105,22 +105,22 @@ function dialog_main() {
     "restart-host" "Restart the server" \
     "restart-services" "Restart certain services" \
     "port-list" "List used ports" \
-    "quit" "Quit the Stereum Control Center"
+    "quit" "Quit the Stereum Control Center" \
      3>&1 1>&2 2>&3)
 
   dialog --clear
 
-  if [ $choice_main == "import-wallet" ]; then
+  if [ "$choice_main" == "import-wallet" ]; then
     dialog_import_wallet
-  elif [ $choice_main == "update" ]; then
+  elif [ "$choice_main" == "update" ]; then
     dialog_update
-  elif [ $choice_main == "restart-host" ]; then
+  elif [ "$choice_main" == "restart-host" ]; then
     dialog_restart_host
-  elif [ $choice_main == "restart-services" ]; then
+  elif [ "$choice_main" == "restart-services" ]; then
     dialog_restart_services
-  elif [ $choice_main == "port-list" ]; then
+  elif [ "$choice_main" == "port-list" ]; then
     dialog_port_list
-  elif [ $choice_main == "quit" ]; then
+  elif [ "$choice_main" == "quit" ]; then
     clear
     exit 0
   fi
@@ -131,7 +131,7 @@ function check_config() {
     echo "Found config $stereum_config_file_path"
 
     source helper/yaml.sh
-    create_variables $stereum_config_file_path
+    create_variables "$stereum_config_file_path"
   else
     echo "No config found at $stereum_config_file_path"
     exit 1
