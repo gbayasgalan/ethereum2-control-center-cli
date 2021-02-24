@@ -8,10 +8,12 @@ stereum_config_file_path=/etc/stereum/ethereum2.yaml
 
 # check for necessary packages for installing stereum
 function check_dependencies() {
-  apt install python3 python3-pip dialog -y -qq &> /dev/null
+  echo "Checking dependencies (python3, dialog)..."
+  apt install python3 python3-pip dialog -y -qq &>/dev/null
 }
 
-function check_priviliges() {
+function check_privileges() {
+  echo "Checking privileges..."
   if [[ $EUID -ne 0 ]]; then
     clear
     echo "This script must be run as root or with sudo."
@@ -78,7 +80,7 @@ setups:
 # docker settings
 docker_address_pool_base: 172.80.0.0/12
 docker_address_pool_size: 24
-" > $stereum_config_file_path
+" >$stereum_config_file_path
 
   chmod +r $stereum_config_file_path
 }
@@ -87,35 +89,44 @@ function install_stereum() {
   wget -q -O /tmp/stereum-installer.run http://rocklogic.at/tmp/init-setup.run
 
   chmod +x /tmp/stereum-installer.run
-  /tmp/stereum-installer.run > "/var/log/stereum-installer.log" 2>&1
+  /tmp/stereum-installer.run >"/var/log/stereum-installer.log" 2>&1
 
   rm /tmp/stereum-installer.run
 }
 
 function dialog_installation_successful() {
-    dialog --backtitle "$dialog_backtitle" \
-      --title "Successful" \
-      --msgbox "Installation successful!" \
-      8 40
-    dialog --clear
-    clear
+  dialog --backtitle "$dialog_backtitle" \
+    --title "Successful" \
+    --msgbox "Installation successful!" \
+    8 40
+  dialog --clear
+  clear
 }
 
 function dialog_install_progress() {
   (
-    echo "XXX"; echo "Configure..."; echo "XXX"
-    echo "10"; install_config
+    echo "XXX"
+    echo "Configure..."
+    echo "XXX"
+    echo "10"
+    install_config
 
-    echo "XXX"; echo "Download and run install... (this might take a couple of minutes)"; echo "XXX"
-    echo "20"; install_stereum
+    echo "XXX"
+    echo "Download and run install... (this might take a couple of minutes)"
+    echo "XXX"
+    echo "20"
+    install_stereum
 
-    echo "XXX"; echo "Done!"; echo "XXX"
-    echo "100"; sleep 1
+    echo "XXX"
+    echo "Done!"
+    echo "XXX"
+    echo "100"
+    sleep 1
   ) |
-  dialog --backtitle "$dialog_backtitle" \
-    --title "Installation Progress" \
-    --gauge "Starting installation..." \
-    8 40
+    dialog --backtitle "$dialog_backtitle" \
+      --title "Installation Progress" \
+      --gauge "Starting installation..." \
+      8 40
 
   dialog --clear
 }
@@ -141,7 +152,7 @@ function dialog_client() {
     "nimbus" "Nimbus Eth2 by Status" \
     "prysm" "Prysm by Prysmatic Labs" \
     "teku" "Teku by ConsenSys" \
-     3>&1 1>&2 2>&3)
+    3>&1 1>&2 2>&3)
 
   dialog --clear
 }
@@ -172,7 +183,7 @@ function dialog_welcome() {
   fi
 }
 
-check_priviliges
+check_privileges
 check_dependencies
 dialog_welcome
 dialog_path
