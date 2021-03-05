@@ -9,6 +9,7 @@ dialog_overrides_text="Customize your node:"
 dialog_overrides_default="default"
 
 stereum_config_file_path=/etc/stereum/ethereum2.yaml
+eth1_node=
 
 # check for necessary packages for installing stereum
 function check_dependencies() {
@@ -35,6 +36,7 @@ stereum_user: stereum
 network: $e2dc_network
 setup: $e2dc_client
 setup_override: $e2dc_override
+eth1_node: $eth1_node
 
 # mapping table (key, value) with network name as key and branch name as value
 networks:
@@ -229,8 +231,23 @@ function dialog_overrides_teku() {
   e2dc_override="$dialog_overrides_default"
 }
 
+function dialog_external_eth1() {
+  eth1_node=$(dialog --backtitle "$dialog_backtitle" \
+    --title "External Ethereum 1 node" \
+    --inputbox "Please enter the url of the Ethereum 1 node:" \
+    0 0 \
+    "https://mainnet.infura.io:443/v3/put-your-infura-id-here" \
+    3>&1 1>&2 2>&3)
+
+  dialog --clear
+}
+
 function dialog_overrides() {
   dialog_overrides_$e2dc_client
+
+  if [ "$e2dc_override" = "no-geth" ] || [ "$e2dc_override" = "beacon-validator" ]; then
+    dialog_external_eth1
+  fi
 }
 
 function dialog_network() {
