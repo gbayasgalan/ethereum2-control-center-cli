@@ -53,6 +53,7 @@ setups:
       - validator
     compose_path: lighthouse-only/docker-compose.yaml
     create_account: lighthouse-only/create-account.yaml
+    overrides_path: lighthouse-only/override-examples
     overrides:
       - no-geth
   prysm:
@@ -67,6 +68,7 @@ setups:
       - validator
     compose_path: prysm-only/docker-compose.yaml
     create_account: prysm-only/create-account.yaml
+    overrides_path: prysm-only/override-examples
     overrides:
       - beacon-validator
       - geth-cache-2k
@@ -87,6 +89,7 @@ setups:
       - dirk
       - vouch
     compose_path: multiclient-vouch-dirk/docker-compose.yaml
+    overrides_path: multiclient-vouch-dirk/override-examples
     overrides:
       - limit-resources
   nimbus:
@@ -99,6 +102,7 @@ setups:
       - beacon
     compose_path: nimbus-only/docker-compose.yaml
     create_account: nimbus-only/create-account.yaml
+    overrides_path: nimbus-only/override-examples
     overrides:
       - no-geth
   lodestar:
@@ -112,6 +116,7 @@ setups:
       - validator
     compose_path: lodestar-only/docker-compose.yaml
     create_account: lodestar-only/create-account.yaml
+    overrides_path: lodestar-only/override-examples
     overrides:
       - no-geth
   teku:
