@@ -4,6 +4,10 @@
 # curl -s http://rocklogic.at/tmp/stereum-setup-guided.sh | bash
 
 dialog_backtitle="Stereum Node Installation"
+dialog_overrides_title="Customize Setup"
+dialog_overrides_text="Customize your node:"
+dialog_overrides_default="default"
+
 stereum_config_file_path=/etc/stereum/ethereum2.yaml
 
 # check for necessary packages for installing stereum
@@ -30,6 +34,7 @@ e2ccc_install_path: $install_path/ethereum2-control-center-cli
 stereum_user: stereum
 network: $e2dc_network
 setup: $e2dc_client
+setup_override: $e2dc_override
 
 # mapping table (key, value) with network name as key and branch name as value
 networks:
@@ -48,6 +53,8 @@ setups:
       - validator
     compose_path: lighthouse-only/docker-compose.yaml
     create_account: lighthouse-only/create-account.yaml
+    overrides:
+      - no-geth
   prysm:
     services:
       - geth
@@ -60,6 +67,10 @@ setups:
       - validator
     compose_path: prysm-only/docker-compose.yaml
     create_account: prysm-only/create-account.yaml
+    overrides:
+      - beacon-validator
+      - geth-cache-2k
+      - time-mount
   multiclient:
     services:
       - geth
@@ -76,6 +87,44 @@ setups:
       - dirk
       - vouch
     compose_path: multiclient-vouch-dirk/docker-compose.yaml
+    overrides:
+      - limit-resources
+  nimbus:
+    services:
+      - geth
+      - beacon
+      - prometheus
+      - grafana
+    validator_services:
+      - beacon
+    compose_path: nimbus-only/docker-compose.yaml
+    create_account: nimbus-only/create-account.yaml
+    overrides:
+      - no-geth
+  lodestar:
+    services:
+      - geth
+      - beacon
+      - validator
+      - prometheus
+      - grafana
+    validator_services:
+      - validator
+    compose_path: lodestar-only/docker-compose.yaml
+    create_account: lodestar-only/create-account.yaml
+    overrides:
+      - no-geth
+  teku:
+    services:
+      - geth
+      - beacon
+      - prometheus
+      - grafana
+    validator_services:
+      - beacon
+    compose_path: teku-only/docker-compose.yaml
+    create_account: teku-only/create-account.yaml
+    overrides:
 
 # docker settings
 docker_address_pool_base: 172.80.0.0/12
@@ -129,6 +178,54 @@ function dialog_install_progress() {
       8 40
 
   dialog --clear
+}
+
+function dialog_overrides_prysm() {
+  e2dc_override=$(dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_overrides_title" \
+    --menu "$dialog_overrides_text" 0 0 0 \
+    "$dialog_overrides_default" "Default configuration (geth, beacon, validator, grafana, prometheus)" \
+    "beacon-validator" "Beacon and validator only" \
+    "geth-cache-2k" "Default configuration with geth cache 2000" \
+    "time-mount" "Default configuration with forced time sync of containers with host os (linux only)" \
+    3>&1 1>&2 2>&3)
+}
+
+function dialog_overrides_multiclient() {
+  e2dc_override=$(dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_overrides_title" \
+    --menu "$dialog_overrides_text" 0 0 0 \
+    "$dialog_overrides_default" "Default configuration (geth, all beacons, slashers, monitoring)" \
+    "limit-resources" "Default configuration with resource limits per container" \
+    3>&1 1>&2 2>&3)
+}
+
+function dialog_overrides_lighthouse() {
+  e2dc_override=$(dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_overrides_title" \
+    --menu "$dialog_overrides_text" 0 0 0 \
+    "$dialog_overrides_default" "Default configuration (geth, beacon, validator, grafana, prometheus)" \
+    "no-geth" "Configuration without geth, using an external Ethereum 1 node (like infura.io)" \
+    3>&1 1>&2 2>&3)
+}
+
+function dialog_overrides_lodestar() {
+  # same as lighthouse
+  dialog_overrides_lighthouse
+}
+
+function dialog_overrides_nimbus() {
+  # same as lighthouse
+  dialog_overrides_lighthouse
+}
+
+function dialog_overrides_teku() {
+  # no overrides for teku
+  e2dc_override="$dialog_overrides_default"
+}
+
+function dialog_overrides() {
+  dialog_overrides_$e2dc_client
 }
 
 function dialog_network() {
@@ -189,7 +286,9 @@ dialog_welcome
 dialog_path
 dialog_client
 dialog_network
+dialog_overrides
 dialog_install_progress
 dialog_installation_successful
 
 # EOF
+
