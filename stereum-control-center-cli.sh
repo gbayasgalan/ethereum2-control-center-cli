@@ -18,7 +18,7 @@ function dialog_import_wallet() {
     --inputbox "Please enter the password of the validator_keys:" 9 60 "" \
     3>&1 1>&2 2>&3)
 
-  ansible-playbook $e2a_install_path/import-validator-accounts.yaml \
+  ansible-playbook "$e2a_install_path/import-validator-accounts.yaml" \
     -e validator_keys_path="$choice_launchpad_wallet_path" \
     -e validator_password="$choice_launchpad_wallet_password"
 
