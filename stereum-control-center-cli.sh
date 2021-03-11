@@ -18,7 +18,7 @@ function dialog_import_wallet() {
     --inputbox "Please enter the password of the validator_keys:" 9 60 "" \
     3>&1 1>&2 2>&3)
 
-  ansible-playbook $e2a_install_path/import-validator-accounts.yaml \
+  ansible-playbook "$e2a_install_path/import-validator-accounts.yaml" \
     -e validator_keys_path="$choice_launchpad_wallet_path" \
     -e validator_password="$choice_launchpad_wallet_password"
 
@@ -31,9 +31,16 @@ function dialog_import_wallet() {
 }
 
 function dialog_update() {
+  choice_update_version_tag=$(dialog --title "$dialog_title" \
+    --inputbox "What version do you want to use?" 9 60 "" \
+    3>&1 1>&2 2>&3)
+
   (
-    echo "XXX"; echo "Running update..."; echo "XXX"
-    echo "10"; ansible-playbook "$e2a_install_path/update.yaml"
+    echo "XXX"; echo "Downloading new version..."; echo "XXX"
+    echo "10"; ansible-playbook "$e2a_install_path/stop-and-update.yaml" -e stereum_version_tag="$choice_update_version_tag"
+
+    echo "XXX"; echo "Configuring..."; echo "XXX"
+    echo "60"; ansible-playbook "$e2a_install_path/finish-update.yaml"
 
     echo "XXX"; echo "Done!"; echo "XXX"
     echo "100"; sleep 1
@@ -43,7 +50,7 @@ function dialog_update() {
     8 40
 
   dialog --title "$dialog_title" \
-    --msgbox "Update done, services restarted." 5 50
+    --msgbox "Update done, services restarted!" 5 50
 
   dialog --clear
 

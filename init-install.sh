@@ -3,7 +3,9 @@
 ####
 # curl -s http://rocklogic.at/tmp/stereum-setup-guided.sh | bash
 
-dialog_backtitle="Stereum Node Installation"
+stereum_version_tag="v1.1.0-beta"
+
+dialog_backtitle="Stereum Node Installation - $stereum_version_tag"
 dialog_overrides_title="Customize Setup"
 dialog_overrides_text="Customize your node:"
 dialog_overrides_default="default"
@@ -142,12 +144,16 @@ docker_address_pool_size: 24
 }
 
 function install_stereum() {
-  wget -q -O /tmp/stereum-installer.run http://rocklogic.at/tmp/init-setup.run
+  stereum_installer_file="/tmp/stereum-installer-$stereum_version_tag.run"
 
-  chmod +x /tmp/stereum-installer.run
-  /tmp/stereum-installer.run >"/var/log/stereum-installer.log" 2>&1
+  wget -q -O "$stereum_installer_file" "http://rocklogic.at/tmp/init-setup-$stereum_version_tag.run"
 
-  rm /tmp/stereum-installer.run
+  chmod +x "$stereum_installer_file"
+  "$stereum_installer_file" \
+    -e stereum_version_tag="$stereum_version_tag"\
+    > "/var/log/stereum-installer.log" 2>&1
+
+  rm "$stereum_installer_file"
 }
 
 function dialog_installation_successful() {
