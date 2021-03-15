@@ -146,7 +146,7 @@ docker_address_pool_size: 24
 function install_stereum() {
   stereum_installer_file="/tmp/stereum-installer-$stereum_version_tag.run"
 
-  wget -q -O "$stereum_installer_file" "http://rocklogic.at/tmp/init-setup-$stereum_version_tag.run"
+  wget -q -O "$stereum_installer_file" "http://stereum.net/downloads/init-setup-$stereum_version_tag.run"
 
   chmod +x "$stereum_installer_file"
   "$stereum_installer_file" \
