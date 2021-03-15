@@ -3,7 +3,7 @@
 ####
 # curl -s http://rocklogic.at/tmp/stereum-setup-guided.sh | bash
 
-stereum_version_tag="v1.1.0-beta"
+stereum_version_tag="RELEASE"
 
 dialog_backtitle="Stereum Node Installation - $stereum_version_tag"
 dialog_overrides_title="Customize Setup"
