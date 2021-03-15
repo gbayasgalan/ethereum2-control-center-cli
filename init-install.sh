@@ -21,7 +21,7 @@ function check_dependencies() {
 
 function check_privileges() {
   echo "Checking privileges..."
-  if [[ $EUID -ne 0 ]]; then
+  if [[ $EUID -ne 0 && && "$(ps -o comm= | sed -n '1p')" -ne "su" ]]; then
     clear
     echo "This script must be run as root or with sudo."
     exit 1
