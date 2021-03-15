@@ -11,16 +11,17 @@ stereum_config_file_path=/etc/stereum/ethereum2.yaml
 
 function dialog_import_wallet() {
   choice_launchpad_wallet_path=$(dialog --title "$dialog_title" \
-    --inputbox "Please enter the directory of the validator_keys\n(e. g. /home/user/validator_keys):" 9 60 "" \
+    --inputbox "Please enter the directory of the validator_keys\n(e. g. /tmp/validator_keys):" 9 60 "" \
     3>&1 1>&2 2>&3)
 
   choice_launchpad_wallet_password=$(dialog --title "$dialog_title" \
     --inputbox "Please enter the password of the validator_keys:" 9 60 "" \
     3>&1 1>&2 2>&3)
 
-  ansible-playbook "$e2a_install_path/import-validator-accounts.yaml" \
+  ansible-playbook \
     -e validator_keys_path="$choice_launchpad_wallet_path" \
-    -e validator_password="$choice_launchpad_wallet_password"
+    -e validator_password="$choice_launchpad_wallet_password" \
+    "${e2a_install_path}/import-validator-accounts.yaml"
 
   dialog --title "$dialog_title" \
     --msgbox "Import done, necessary services restarted." 5 50
@@ -37,10 +38,10 @@ function dialog_update() {
 
   (
     echo "XXX"; echo "Downloading new version..."; echo "XXX"
-    echo "10"; ansible-playbook "$e2a_install_path/stop-and-update.yaml" -e stereum_version_tag="$choice_update_version_tag"
+    echo "10"; ansible-playbook -e stereum_version_tag="$choice_update_version_tag" "${e2a_install_path}/stop-and-update.yaml"
 
     echo "XXX"; echo "Configuring..."; echo "XXX"
-    echo "60"; ansible-playbook "$e2a_install_path/finish-update.yaml"
+    echo "60"; ansible-playbook "{$e2a_install_path}/finish-update.yaml"
 
     echo "XXX"; echo "Done!"; echo "XXX"
     echo "100"; sleep 1
@@ -75,7 +76,7 @@ function dialog_restart_host() {
 function dialog_restart_services() {
   (
     echo "XXX"; echo "Restarting services..."; echo "XXX"
-    echo "10"; ansible-playbook "$e2a_install_path/restart-services.yaml"
+    echo "10"; ansible-playbook "${e2a_install_path}/restart-services.yaml"
 
     echo "XXX"; echo "Done!"; echo "XXX"
     echo "100"; sleep 1
