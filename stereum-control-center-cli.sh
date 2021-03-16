@@ -21,7 +21,9 @@ function dialog_import_wallet() {
   ansible-playbook \
     -e validator_keys_path="$choice_launchpad_wallet_path" \
     -e validator_password="$choice_launchpad_wallet_password" \
-    "${e2a_install_path}/import-validator-accounts.yaml"
+    -v \
+    "${e2a_install_path}/import-validator-accounts.yaml" \
+    > /dev/null 2>&1
 
   dialog --title "$dialog_title" \
     --msgbox "Import done, necessary services restarted." 5 50
@@ -38,10 +40,10 @@ function dialog_update() {
 
   (
     echo "XXX"; echo "Downloading new version..."; echo "XXX"
-    echo "10"; ansible-playbook -e stereum_version_tag="$choice_update_version_tag" "${e2a_install_path}/stop-and-update.yaml"
+    echo "10"; ansible-playbook -e stereum_version_tag="$choice_update_version_tag" -v "${e2a_install_path}/stop-and-update.yaml"
 
     echo "XXX"; echo "Configuring..."; echo "XXX"
-    echo "60"; ansible-playbook "${e2a_install_path}/finish-update.yaml"
+    echo "60"; ansible-playbook -v "${e2a_install_path}/finish-update.yaml"
 
     echo "XXX"; echo "Done!"; echo "XXX"
     echo "100"; sleep 1
@@ -76,7 +78,7 @@ function dialog_restart_host() {
 function dialog_restart_services() {
   (
     echo "XXX"; echo "Restarting services..."; echo "XXX"
-    echo "10"; ansible-playbook "${e2a_install_path}/restart-services.yaml"
+    echo "10"; ansible-playbook -v "${e2a_install_path}/restart-services.yaml"
 
     echo "XXX"; echo "Done!"; echo "XXX"
     echo "100"; sleep 1
