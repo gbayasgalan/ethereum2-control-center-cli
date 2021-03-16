@@ -41,7 +41,7 @@ function dialog_update() {
     echo "10"; ansible-playbook -e stereum_version_tag="$choice_update_version_tag" "${e2a_install_path}/stop-and-update.yaml"
 
     echo "XXX"; echo "Configuring..."; echo "XXX"
-    echo "60"; ansible-playbook "{$e2a_install_path}/finish-update.yaml"
+    echo "60"; ansible-playbook "${e2a_install_path}/finish-update.yaml"
 
     echo "XXX"; echo "Done!"; echo "XXX"
     echo "100"; sleep 1
@@ -135,7 +135,9 @@ function check_config() {
   if [[ -f "$stereum_config_file_path" ]]; then
     echo "Found config $stereum_config_file_path"
 
-    source helper/yaml.sh
+    script_relative_path=$(dirname "$BASH_SOURCE")
+
+    source "${script_relative_path}/helper/yaml.sh"
     create_variables "$stereum_config_file_path"
   else
     echo "No config found at $stereum_config_file_path"
