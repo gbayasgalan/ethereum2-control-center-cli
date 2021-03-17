@@ -132,7 +132,6 @@ setups:
     validator_services:
       - beacon
     compose_path: teku-only/docker-compose.yaml
-    create_account: teku-only/create-account.yaml
     overrides:
 
 # docker settings
