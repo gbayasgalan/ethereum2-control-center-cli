@@ -96,8 +96,9 @@ function dialog_restart_services() {
 }
 
 function dialog_port_list() {
-  dialog --title "$dialog_title" \
-    --msgbox "Feature not ready yet." 5 50
+  ansible-playbook -v "${e2a_install_path}/list-ports.yaml" > /dev/null 2>&1
+
+  dialog --textbox "${e2dc_install_path}/open-ports-list.txt" 0 0
 
   dialog --clear
 
