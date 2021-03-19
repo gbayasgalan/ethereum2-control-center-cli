@@ -96,6 +96,8 @@ function dialog_restart_services() {
 }
 
 function dialog_port_list() {
+  dialog --infobox "Reading services and ports..." 3 34
+
   ansible-playbook -v "${e2a_install_path}/list-ports.yaml" > /dev/null 2>&1
 
   dialog --textbox "${e2dc_install_path}/open-ports-list.txt" 0 0
@@ -138,7 +140,7 @@ function check_config() {
   if [[ -f "$stereum_config_file_path" ]]; then
     echo "Found config $stereum_config_file_path"
 
-    script_relative_path=$(dirname "$BASH_SOURCE")
+    script_relative_path="$(dirname "$(readlink -f "$0")")"
 
     source "${script_relative_path}/helper/yaml.sh"
     create_variables "$stereum_config_file_path"
