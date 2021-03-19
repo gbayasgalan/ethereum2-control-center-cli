@@ -10,11 +10,13 @@ dialog_title="Stereum Control Center"
 stereum_config_file_path=/etc/stereum/ethereum2.yaml
 
 function dialog_import_wallet() {
-  choice_launchpad_wallet_path=$(dialog --title "$dialog_title" \
+  choice_launchpad_wallet_path=$(dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_title" \
     --inputbox "Please enter the directory of the validator_keys\n(e. g. /tmp/validator_keys):" 9 60 "" \
     3>&1 1>&2 2>&3)
 
-  choice_launchpad_wallet_password=$(dialog --title "$dialog_title" \
+  choice_launchpad_wallet_password=$(dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_title" \
     --inputbox "Please enter the password of the validator_keys:" 9 60 "" \
     3>&1 1>&2 2>&3)
 
@@ -25,8 +27,12 @@ function dialog_import_wallet() {
     "${e2a_install_path}/import-validator-accounts.yaml" \
     > /dev/null 2>&1
 
-  dialog --title "$dialog_title" \
-    --msgbox "Import done, necessary services restarted." 5 50
+  dialog --backtitle "$dialog_backtitle" \
+    --infobox "Importing keys..." 3 19
+
+  dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_title" \
+    --msgbox "Import done, please see /var/log/anisble.log for details or grafana!" 6 50
 
   dialog --clear
 
@@ -34,7 +40,8 @@ function dialog_import_wallet() {
 }
 
 function dialog_update() {
-  choice_update_version_tag=$(dialog --title "$dialog_title" \
+  choice_update_version_tag=$(dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_title" \
     --inputbox "What version do you want to use?" 9 60 "" \
     3>&1 1>&2 2>&3)
 
@@ -48,11 +55,13 @@ function dialog_update() {
     echo "XXX"; echo "Done!"; echo "XXX"
     echo "100"; sleep 1
   ) |
-  dialog --title "$dialog_title" \
+  dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_title" \
     --gauge "Starting update..." \
     8 40
 
-  dialog --title "$dialog_title" \
+  dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_title" \
     --msgbox "Update done, services restarted!" 5 50
 
   dialog --clear
@@ -61,7 +70,8 @@ function dialog_update() {
 }
 
 function dialog_restart_host() {
-  dialog --title "$dialog_title" \
+  dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_title" \
     --yesno "Are you sure to restart the host?" \
     0 0
   choice=$?
@@ -83,11 +93,13 @@ function dialog_restart_services() {
     echo "XXX"; echo "Done!"; echo "XXX"
     echo "100"; sleep 1
   ) |
-  dialog --title "$dialog_title" \
+  dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_title" \
     --gauge "Restarting services..." \
     8 40
 
-  dialog --title "$dialog_title" \
+  dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_title" \
     --msgbox "Restarting done, services restarted." 5 50
 
   dialog --clear
@@ -96,9 +108,13 @@ function dialog_restart_services() {
 }
 
 function dialog_port_list() {
+  dialog --backtitle "$dialog_backtitle" \
+    --infobox "Reading services and ports..." 3 34
+
   ansible-playbook -v "${e2a_install_path}/list-ports.yaml" > /dev/null 2>&1
 
-  dialog --textbox "${e2dc_install_path}/open-ports-list.txt" 0 0
+  dialog --backtitle "$dialog_backtitle" \
+    --textbox "${e2dc_install_path}/open-ports-list.txt" 0 0
 
   dialog --clear
 
@@ -106,7 +122,8 @@ function dialog_port_list() {
 }
 
 function dialog_main() {
-  choice_main=$(dialog --title "$dialog_title - Main Menu" \
+  choice_main=$(dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_title - Main Menu" \
     --menu "" 0 0 0 \
     "import-wallet" "Import a wallet of launchpad.ethereum.org" \
     "update" "Update your OS and Stereum Node" \
@@ -138,10 +155,13 @@ function check_config() {
   if [[ -f "$stereum_config_file_path" ]]; then
     echo "Found config $stereum_config_file_path"
 
-    script_relative_path=$(dirname "$BASH_SOURCE")
+    script_relative_path="$(dirname "$(readlink -f "$0")")"
 
     source "${script_relative_path}/helper/yaml.sh"
     create_variables "$stereum_config_file_path"
+
+    stereum_version_tag=$(git describe --tags)
+    dialog_backtitle="Stereum Node Control Center - $stereum_version_tag"
   else
     echo "No config found at $stereum_config_file_path"
     exit 1
