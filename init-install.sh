@@ -159,7 +159,7 @@ function dialog_installation_successful() {
   dialog --backtitle "$dialog_backtitle" \
     --title "Successful" \
     --msgbox "Installation successful!\n\nRun the command 'stereum-control-center-cli' to configure your node." \
-    8 40
+    9 40
   dialog --clear
   clear
 }

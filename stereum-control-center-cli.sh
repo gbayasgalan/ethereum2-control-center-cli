@@ -20,6 +20,9 @@ function dialog_import_wallet() {
     --inputbox "Please enter the password of the validator_keys:" 9 60 "" \
     3>&1 1>&2 2>&3)
 
+  dialog --backtitle "$dialog_backtitle" \
+    --infobox "Importing keys..." 3 19
+
   ansible-playbook \
     -e validator_keys_path="$choice_launchpad_wallet_path" \
     -e validator_password="$choice_launchpad_wallet_password" \
@@ -28,11 +31,8 @@ function dialog_import_wallet() {
     > /dev/null 2>&1
 
   dialog --backtitle "$dialog_backtitle" \
-    --infobox "Importing keys..." 3 19
-
-  dialog --backtitle "$dialog_backtitle" \
     --title "$dialog_title" \
-    --msgbox "Import done, please see /var/log/anisble.log for details or grafana!" 6 50
+    --msgbox "Import done, please see /var/log/anisble.log or grafana for details!" 6 50
 
   dialog --clear
 
