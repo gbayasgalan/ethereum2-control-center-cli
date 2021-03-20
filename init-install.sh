@@ -39,6 +39,7 @@ network: $e2dc_network
 setup: $e2dc_client
 setup_override: $e2dc_override
 eth1_node: $eth1_node
+api_bind_address: 127.0.0.1
 
 # mapping table (key, value) with network name as key and branch name as value
 networks:
