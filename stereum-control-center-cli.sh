@@ -69,6 +69,42 @@ function dialog_update() {
   dialog_main
 }
 
+function dialog_graffiti() {
+  choice_graffiti=$(dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_title" \
+    --inputbox "What graffiti do you want to use?" 9 60 "" \
+    3>&1 1>&2 2>&3)
+
+  dialog --backtitle "$dialog_backtitle" \
+    --infobox "Setting graffiti..." 0 0
+
+  ansible-playbook \
+    -e e2dc_graffiti_updated="$choice_graffiti" \
+    -v \
+    "${e2a_install_path}/set-graffiti.yaml" \
+    > /dev/null 2>&1
+
+  dialog_main
+}
+
+function dialog_api_bind_addr() {
+  choice_api_bind_addr=$(dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_title" \
+    --inputbox "Please enter the IP to bind api listening?" 9 60 "" \
+    3>&1 1>&2 2>&3)
+
+  dialog --backtitle "$dialog_backtitle" \
+    --infobox "Setting api bind address..." 0 0
+
+  ansible-playbook \
+    -e e2dc_api_bind_address_updated="$choice_api_bind_addr" \
+    -v \
+    "${e2a_install_path}/set-api-bind-address.yaml" \
+    > /dev/null 2>&1
+
+  dialog_main
+}
+
 function dialog_restart_host() {
   dialog --backtitle "$dialog_backtitle" \
     --title "$dialog_title" \
@@ -127,6 +163,8 @@ function dialog_main() {
     --menu "" 0 0 0 \
     "import-wallet" "Import a wallet of launchpad.ethereum.org" \
     "update" "Update your OS and Stereum Node" \
+    "graffiti" "Set graffiti for staking" \
+    "api-bind-addr" "Bind address for apis (default: 127.0.0.1)" \
     "restart-host" "Restart the server" \
     "restart-services" "Restart certain services" \
     "port-list" "List used ports" \
@@ -139,6 +177,10 @@ function dialog_main() {
     dialog_import_wallet
   elif [ "$choice_main" == "update" ]; then
     dialog_update
+  elif [ "$choice_main" == "graffiti" ]; then
+    dialog_graffiti
+  elif [ "$choice_main" == "api-bind-addr" ]; then
+    dialog_api_bind_addr
   elif [ "$choice_main" == "restart-host" ]; then
     dialog_restart_host
   elif [ "$choice_main" == "restart-services" ]; then
