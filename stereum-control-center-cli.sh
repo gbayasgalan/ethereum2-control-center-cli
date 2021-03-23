@@ -227,7 +227,7 @@ function check_config() {
     source "${script_relative_path}/helper/yaml.sh"
     create_variables "$stereum_config_file_path"
 
-    stereum_version_tag=$(git describe --tags)
+    stereum_version_tag=$(git -C "$e2ccc_install_path" describe --tags)
     dialog_backtitle="Stereum Node Control Center - $stereum_version_tag"
   else
     echo "No config found at $stereum_config_file_path"
