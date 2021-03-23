@@ -72,7 +72,7 @@ function dialog_update() {
 function dialog_graffiti() {
   choice_graffiti=$(dialog --backtitle "$dialog_backtitle" \
     --title "$dialog_title" \
-    --inputbox "What graffiti do you want to use?" 9 60 "" \
+    --inputbox "Please enter new graffiti:" 9 60 "" \
     3>&1 1>&2 2>&3)
 
   dialog --backtitle "$dialog_backtitle" \
@@ -90,7 +90,7 @@ function dialog_graffiti() {
 function dialog_api_bind_addr() {
   choice_api_bind_addr=$(dialog --backtitle "$dialog_backtitle" \
     --title "$dialog_title" \
-    --inputbox "Please enter the IP to bind api listening?" 9 60 "" \
+    --inputbox "Please enter new IP to bind api listening:" 9 60 "" \
     3>&1 1>&2 2>&3)
 
   dialog --backtitle "$dialog_backtitle" \
