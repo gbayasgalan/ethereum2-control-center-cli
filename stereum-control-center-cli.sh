@@ -143,6 +143,28 @@ function dialog_restart_services() {
   dialog_main
 }
 
+function dialog_geth_prune() {
+  dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_title" \
+    --yesno "While geth is in the process of pruning there is no way your validators can create blocks. The process might take several hours depending on your hardware.\n\nDo you want to continue?" \
+    0 0
+  choice=$?
+
+  if [ $choice != 0 ]; then
+    dialog --clear
+    dialog_main
+  else
+    ansible-playbook -v "${e2a_install_path}/geth-prune.yaml" > /dev/null 2>&1 &
+
+    dialog --backtitle "$dialog_backtitle" \
+      --title "$dialog_title" \
+      --msgbox "Geth stoppend and pruning started.\n\nGeth will start automatically after pruning is done!" 0 0
+
+    dialog --clear
+    dialog_main
+  fi
+}
+
 function dialog_port_list() {
   dialog --backtitle "$dialog_backtitle" \
     --infobox "Reading services and ports..." 3 34
@@ -167,6 +189,7 @@ function dialog_main() {
     "api-bind-addr" "Bind address for apis (default: 127.0.0.1)" \
     "restart-host" "Restart the server" \
     "restart-services" "Restart certain services" \
+    "geth-prune" "Prune geth to reallocate disk space" \
     "port-list" "List used ports" \
     "quit" "Quit the Stereum Control Center" \
      3>&1 1>&2 2>&3)
@@ -185,6 +208,8 @@ function dialog_main() {
     dialog_restart_host
   elif [ "$choice_main" == "restart-services" ]; then
     dialog_restart_services
+  elif [ "$choice_main" == "geth-prune" ]; then
+    dialog_geth_prune
   elif [ "$choice_main" == "port-list" ]; then
     dialog_port_list
   elif [ "$choice_main" == "quit" ]; then
