@@ -11,19 +11,9 @@ stereum_config_file_path=/etc/stereum/ethereum2.yaml
 
 function dialog_import_wallet() {
   if [ "$setup" == "multiclient" ]; then
-  choice_launchpad_wallet_path=$(dialog --backtitle "$dialog_backtitle" \
-    --title "$dialog_title" \
-    --inputbox "Please enter the directory of the validator_keys\n(e. g. /tmp/validator_keys):" 9 60 "" \
-    3>&1 1>&2 2>&3)
-
   choice_validator_number=$(dialog --backtitle "$dialog_backtitle" \
     --title "$dialog_title" \
     --inputbox "Please enter the number of the validator_keys:" 9 60 "" \
-    3>&1 1>&2 2>&3)
-
-  choice_account_password=$(dialog --backtitle "$dialog_backtitle" \
-    --title "$dialog_title" \
-    --inputbox "Please enter the password of the accounts:" 9 60 "" \
     3>&1 1>&2 2>&3)
 
   choice_validator_mnemonic=$(dialog --backtitle "$dialog_backtitle" \
@@ -32,9 +22,7 @@ function dialog_import_wallet() {
     3>&1 1>&2 2>&3)
 
   ansible-playbook \
-    -e validator_keys_path="$choice_launchpad_wallet_path" \
     -e validator_number="$choice_validator_number" \
-    -e validator_password="$choice_account_password" \
     -e validator_mnemonic="$choice_validator_mnemonic" \
     -v \
     "${e2a_install_path}/import-validator-accounts.yaml" \
