@@ -48,6 +48,16 @@ networks:
   mainnet: mainnet
 
 setups:
+  allbeacons:
+    services:
+      - geth
+      - lighthouse_beacon
+      - lodestar_beacon
+      - nimbus_beacon
+      - prysm_beacon
+      - teku_beacon
+    compose_path: allbeacons/docker-compose.yaml
+    overrides:
   lighthouse:
     services:
       - geth
@@ -238,6 +248,11 @@ function dialog_overrides_teku() {
   e2dc_override="$dialog_overrides_default"
 }
 
+function dialog_overrides_allbeacons() {
+  # no overrides for allbeacons
+  e2dc_override="$dialog_overrides_default"
+}
+
 function dialog_external_eth1() {
   eth1_node=$(dialog --backtitle "$dialog_backtitle" \
     --title "External Ethereum 1 node" \
@@ -278,6 +293,7 @@ function dialog_client() {
     "nimbus" "Nimbus Eth2 by Status" \
     "prysm" "Prysm by Prysmatic Labs" \
     "teku" "Teku by ConsenSys" \
+    "allbeacons" "All beacons: lighthouse, lodestar, nimbus, prysm, teku and no validators" \
     3>&1 1>&2 2>&3)
 
   dialog --clear
