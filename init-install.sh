@@ -46,6 +46,7 @@ e2dc_graffiti: stereum.net
 networks:
   pyrmont: master
   mainnet: mainnet
+  prater: prater
 
 setups:
   allbeacons:
@@ -277,7 +278,8 @@ function dialog_network() {
     --title "Network" \
     --menu "Please select the network you want to connect to:" 0 0 0 \
     "mainnet" "Mainnet" \
-    "pyrmont" "Pyrmont testnet" \
+    "pyrmont" "Pyrmont testnet (old)" \
+    "prater" "Prater testnet (new)" \
     3>&1 1>&2 2>&3)
 
   dialog --clear
