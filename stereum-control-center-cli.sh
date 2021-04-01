@@ -258,7 +258,7 @@ function dialog_main() {
     dialog_geth_prune
   elif [ "$choice_main" == "port-list" ]; then
     dialog_port_list
-   elif [ "$choice_main" == "exit-account" ]; then
+  elif [ "$choice_main" == "exit-account" ]; then
     dialog_exit_validator  
   elif [ "$choice_main" == "quit" ]; then
     clear
