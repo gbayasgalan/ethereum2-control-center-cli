@@ -200,6 +200,30 @@ function dialog_port_list() {
   dialog_main
 }
 
+function dialog_exit_validator() {
+  choice_validator_keystore_file=$(dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_title" \
+    --inputbox "Please enter the name of keystore file (e.g: keystore-m_12345_1234_0_0_0-1234567890.json ) :" 9 60 "" \
+    3>&1 1>&2 2>&3)
+
+  choice_validator_password=$(dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_title" \
+    --inputbox "Please enter account password:" 9 60 "" \
+    3>&1 1>&2 2>&3)
+
+  dialog --backtitle "$dialog_backtitle" \
+    --infobox "exiting validator account..." 0 0
+
+  ansible-playbook \
+    -e validator_keystore="$choice_validator_keystore_file" \
+    -e validator_password="$choice_validator_password" \
+    -v \
+    "${e2a_install_path}/exit-validator-accounts.yaml" \
+    > /dev/null 2>&1
+
+  dialog_main
+}
+
 function dialog_main() {
   choice_main=$(dialog --backtitle "$dialog_backtitle" \
     --title "$dialog_title - Main Menu" \
@@ -212,6 +236,7 @@ function dialog_main() {
     "restart-services" "Restart certain services" \
     "geth-prune" "Prune geth to reallocate disk space" \
     "port-list" "List used ports" \
+    "exit-account" "Voluntary exit of validator" \
     "quit" "Quit the Stereum Control Center" \
      3>&1 1>&2 2>&3)
 
@@ -233,6 +258,8 @@ function dialog_main() {
     dialog_geth_prune
   elif [ "$choice_main" == "port-list" ]; then
     dialog_port_list
+   elif [ "$choice_main" == "exit-account" ]; then
+    dialog_exit_validator  
   elif [ "$choice_main" == "quit" ]; then
     clear
     exit 0
