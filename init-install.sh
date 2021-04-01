@@ -70,6 +70,7 @@ setups:
       - validator
     compose_path: lighthouse-only/docker-compose.yaml
     create_account: lighthouse-only/create-account.yaml
+    exit_account: lighthouse-only/exit-account.yaml
     overrides_path: compose-examples/lighthouse-only/override-examples
     overrides:
       - no-geth
