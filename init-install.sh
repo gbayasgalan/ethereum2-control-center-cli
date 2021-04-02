@@ -58,7 +58,6 @@ setups:
       - prysm_beacon
       - teku_beacon
     compose_path: allbeacons/docker-compose.yaml
-    overrides:
   lighthouse:
     services:
       - geth
@@ -72,8 +71,6 @@ setups:
     create_account: lighthouse-only/create-account.yaml
     exit_account: lighthouse-only/exit-account.yaml
     overrides_path: compose-examples/lighthouse-only/override-examples
-    overrides:
-      - no-geth
   prysm:
     services:
       - geth
@@ -87,10 +84,6 @@ setups:
     compose_path: prysm-only/docker-compose.yaml
     create_account: prysm-only/create-account.yaml
     overrides_path: compose-examples/prysm-only/override-examples
-    overrides:
-      - beacon-validator
-      - geth-cache-2k
-      - time-mount
   multiclient:
     services:
       - geth
@@ -108,8 +101,6 @@ setups:
       - vouch
     compose_path: multiclient-vouch-dirk/docker-compose.yaml
     overrides_path: compose-examples/multiclient-vouch-dirk/override-examples
-    overrides:
-      - limit-resources
   nimbus:
     services:
       - geth
@@ -121,8 +112,6 @@ setups:
     compose_path: nimbus-only/docker-compose.yaml
     create_account: nimbus-only/create-account.yaml
     overrides_path: compose-examples/nimbus-only/override-examples
-    overrides:
-      - no-geth
   lodestar:
     services:
       - geth
@@ -135,8 +124,6 @@ setups:
     compose_path: lodestar-only/docker-compose.yaml
     create_account: lodestar-only/create-account.yaml
     overrides_path: compose-examples/lodestar-only/override-examples
-    overrides:
-      - no-geth
   teku:
     services:
       - geth
@@ -146,7 +133,7 @@ setups:
     validator_services:
       - beacon
     compose_path: teku-only/docker-compose.yaml
-    overrides:
+    overrides_path: compose-examples/teku-only/override-examples
 
 # docker settings
 docker_address_pool_base: 172.80.0.0/12
@@ -246,8 +233,8 @@ function dialog_overrides_nimbus() {
 }
 
 function dialog_overrides_teku() {
-  # no overrides for teku
-  e2dc_override="$dialog_overrides_default"
+  # same as lighthouse
+  dialog_overrides_lighthouse
 }
 
 function dialog_overrides_allbeacons() {
