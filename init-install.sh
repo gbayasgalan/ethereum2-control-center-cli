@@ -123,6 +123,7 @@ setups:
       - validator
     compose_path: lodestar-only/docker-compose.yaml
     create_account: lodestar-only/create-account.yaml
+    exit_account: lodestar-only/exit-account.yaml
     overrides_path: compose-examples/lodestar-only/override-examples
   teku:
     services:
