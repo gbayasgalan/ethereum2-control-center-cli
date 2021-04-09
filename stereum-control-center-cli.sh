@@ -202,38 +202,38 @@ function dialog_port_list() {
 
 function dialog_exit_validator() {
   if [ "$setup" == "lodestar" ]; then
-  choice_validator_pubkey=$(dialog --backtitle "$dialog_backtitle" \
-    --title "$dialog_title" \
-    --inputbox "Please enter validator's pubkey ( e. g: 0x1234abcd..... ):" 9 60 "" \
-    3>&1 1>&2 2>&3)
+    choice_validator_pubkey=$(dialog --backtitle "$dialog_backtitle" \
+      --title "$dialog_title" \
+      --inputbox "Please enter validator's pubkey ( e. g: 0x1234abcd..... ):" 9 60 "" \
+      3>&1 1>&2 2>&3)
 
-  ansible-playbook \
-    -e validator_pubkey="$choice_validator_pubkey" \
-    -v \
-    "${e2a_install_path}/exit-validator-accounts.yaml" \
-    > /dev/null 2>&1
+    ansible-playbook \
+      -e validator_pubkey="$choice_validator_pubkey" \
+      -v \
+      "${e2a_install_path}/exit-validator-accounts.yaml" \
+      > /dev/null 2>&1
 
   else
 
-  choice_validator_keystore_file=$(dialog --backtitle "$dialog_backtitle" \
-    --title "$dialog_title" \
-    --inputbox "Please enter the name of keystore file (e.g: keystore-m_12345_1234_0_0_0-1234567890.json ) :" 9 60 "" \
-    3>&1 1>&2 2>&3)
+    choice_validator_keystore_file=$(dialog --backtitle "$dialog_backtitle" \
+      --title "$dialog_title" \
+      --inputbox "Please enter the name of keystore file (e.g: keystore-m_12345_1234_0_0_0-1234567890.json ) :" 9 60 "" \
+      3>&1 1>&2 2>&3)
 
-  choice_validator_password=$(dialog --backtitle "$dialog_backtitle" \
-    --title "$dialog_title" \
-    --inputbox "Please enter account password:" 9 60 "" \
-    3>&1 1>&2 2>&3)
+    choice_validator_password=$(dialog --backtitle "$dialog_backtitle" \
+      --title "$dialog_title" \
+      --inputbox "Please enter account password:" 9 60 "" \
+      3>&1 1>&2 2>&3)
 
-  dialog --backtitle "$dialog_backtitle" \
-    --infobox "exiting validator account..." 0 0
+    dialog --backtitle "$dialog_backtitle" \
+      --infobox "exiting validator account..." 0 0
 
-  ansible-playbook \
-    -e validator_keystore="$choice_validator_keystore_file" \
-    -e validator_password="$choice_validator_password" \
-    -v \
-    "${e2a_install_path}/exit-validator-accounts.yaml" \
-    > /dev/null 2>&1
+    ansible-playbook \
+      -e validator_keystore="$choice_validator_keystore_file" \
+      -e validator_password="$choice_validator_password" \
+      -v \
+      "${e2a_install_path}/exit-validator-accounts.yaml" \
+      > /dev/null 2>&1
   fi
 
   dialog_main
