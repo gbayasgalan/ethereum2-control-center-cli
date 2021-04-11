@@ -83,6 +83,7 @@ setups:
       - validator
     compose_path: prysm-only/docker-compose.yaml
     create_account: prysm-only/create-account.yaml
+    exit_account: prysm-only/exit-account.yaml
     overrides_path: compose-examples/prysm-only/override-examples
   multiclient:
     services:
