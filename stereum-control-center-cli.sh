@@ -201,7 +201,7 @@ function dialog_port_list() {
 }
 
 function dialog_exit_validator() {
-  if [[ "$setup" == "lodestar" || "$setup" == "prysm" ]]; then
+  if [[ "$setup" == "lodestar" || "$setup" == "prysm" || "$setup" == "nimbus" ]]; then
     choice_validator_pubkey=$(dialog --backtitle "$dialog_backtitle" \
       --title "$dialog_title" \
       --inputbox "Please enter validator's pubkey ( e. g: 0x1234abcd..... ):" 9 60 "" \
