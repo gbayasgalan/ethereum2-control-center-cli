@@ -10,7 +10,6 @@ dialog_overrides_title="Customize Setup"
 dialog_overrides_text="Customize your node:"
 dialog_overrides_default="default"
 
-stereum_config_file_path=/etc/stereum/ethereum2.yaml
 eth1_node=
 
 # check for necessary packages for installing stereum
@@ -28,123 +27,6 @@ function check_privileges() {
   fi
 }
 
-function install_config() {
-  mkdir -p /etc/stereum
-
-  echo "e2dc_install_path: $install_path/ethereum2-docker-compose
-e2a_install_path: $install_path/ethereum2-ansible
-e2ccc_install_path: $install_path/ethereum2-control-center-cli
-stereum_user: stereum
-network: $e2dc_network
-setup: $e2dc_client
-setup_override: $e2dc_override
-eth1_node: $eth1_node
-e2dc_api_bind_address: 127.0.0.1
-e2dc_graffiti: stereum.net
-
-# mapping table (key, value) with network name as key and branch name as value
-networks:
-  pyrmont: master
-  mainnet: mainnet
-  prater: prater
-
-setups:
-  allbeacons:
-    services:
-      - geth
-      - lighthouse_beacon
-      - lodestar_beacon
-      - nimbus_beacon
-      - prysm_beacon
-      - teku_beacon
-    compose_path: allbeacons/docker-compose.yaml
-  lighthouse:
-    services:
-      - geth
-      - beacon
-      - validator
-      - prometheus
-      - grafana
-    validator_services:
-      - validator
-    compose_path: lighthouse-only/docker-compose.yaml
-    create_account: lighthouse-only/create-account.yaml
-    exit_account: lighthouse-only/exit-account.yaml
-    overrides_path: compose-examples/lighthouse-only/override-examples
-  prysm:
-    services:
-      - geth
-      - beacon
-      - slasher
-      - validator
-      - prometheus
-      - grafana
-    validator_services:
-      - validator
-    compose_path: prysm-only/docker-compose.yaml
-    create_account: prysm-only/create-account.yaml
-    exit_account: prysm-only/exit-account.yaml
-    overrides_path: compose-examples/prysm-only/override-examples
-  multiclient:
-    services:
-      - geth
-      - prysm_beacon
-      - prysm_beacon_slasher
-      - lighthouse_beacon
-      - teku_beacon
-      - dirk
-      - vouch
-      - prysm_slasher
-      - grafana
-      - prometheus
-    validator_services:
-      - dirk
-      - vouch
-    compose_path: multiclient-vouch-dirk/docker-compose.yaml
-    overrides_path: compose-examples/multiclient-vouch-dirk/override-examples
-  nimbus:
-    services:
-      - geth
-      - beacon
-      - prometheus
-      - grafana
-    validator_services:
-      - beacon
-    compose_path: nimbus-only/docker-compose.yaml
-    create_account: nimbus-only/create-account.yaml
-    overrides_path: compose-examples/nimbus-only/override-examples
-  lodestar:
-    services:
-      - geth
-      - beacon
-      - validator
-      - prometheus
-      - grafana
-    validator_services:
-      - validator
-    compose_path: lodestar-only/docker-compose.yaml
-    create_account: lodestar-only/create-account.yaml
-    exit_account: lodestar-only/exit-account.yaml
-    overrides_path: compose-examples/lodestar-only/override-examples
-  teku:
-    services:
-      - geth
-      - beacon
-      - prometheus
-      - grafana
-    validator_services:
-      - beacon
-    compose_path: teku-only/docker-compose.yaml
-    overrides_path: compose-examples/teku-only/override-examples
-
-# docker settings
-docker_address_pool_base: 172.80.0.0/12
-docker_address_pool_size: 24
-" >$stereum_config_file_path
-
-  chmod +r $stereum_config_file_path
-}
-
 function install_stereum() {
   stereum_installer_file="/tmp/stereum-installer-$stereum_version_tag.run"
 
@@ -152,6 +34,11 @@ function install_stereum() {
 
   chmod +x "$stereum_installer_file"
   "$stereum_installer_file" \
+    -e install_path="$install_path" \
+    -e e2dc_network="$e2dc_network" \
+    -e e2dc_client="$e2dc_client" \
+    -e e2dc_override="$e2dc_override" \
+    -e eth1_node="$eth1_node" \
     -e stereum_version_tag="$stereum_version_tag"\
     > "/var/log/stereum-installer.log" 2>&1
 
@@ -169,12 +56,6 @@ function dialog_installation_successful() {
 
 function dialog_install_progress() {
   (
-    echo "XXX"
-    echo "Configure..."
-    echo "XXX"
-    echo "10"
-    install_config
-
     echo "XXX"
     echo "Download and run install... (this might take a couple of minutes)"
     echo "XXX"
