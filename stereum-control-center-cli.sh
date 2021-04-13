@@ -71,7 +71,7 @@ function dialog_update() {
     echo "10"; ansible-playbook -e stereum_version_tag="$choice_update_version_tag" -v "${e2a_install_path}/stop-and-update.yaml" > /dev/null 2>&1
 
     echo "XXX"; echo "Configuring..."; echo "XXX"
-    echo "60"; ansible-playbook -v "${e2a_install_path}/finish-update.yaml" > /dev/null 2>&1
+    echo "60"; ansible-playbook -e stereum_version_tag="$choice_update_version_tag" -v "${e2a_install_path}/finish-update.yaml" > /dev/null 2>&1
 
     echo "XXX"; echo "Done!"; echo "XXX"
     echo "100"; sleep 1
