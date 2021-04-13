@@ -35,11 +35,12 @@ function install_stereum() {
   chmod +x "$stereum_installer_file"
   "$stereum_installer_file" \
     -e install_path="$install_path" \
-    -e e2dc_network="$e2dc_network" \
-    -e e2dc_client="$e2dc_client" \
-    -e e2dc_override="$e2dc_override" \
+    -e network="$e2dc_network" \
+    -e setup="$e2dc_client" \
+    -e setup_override="$e2dc_override" \
     -e eth1_node="$eth1_node" \
-    -e stereum_version_tag="$stereum_version_tag"\
+    -e "{ \"auto_update\": { \"check_updates\": \"$auto_update_check_updates\", \"install_updates\": \"$auto_update_install_updates\", \"lane\": \"$auto_update_lane\" } }" \
+    -e stereum_version_tag="$stereum_version_tag" \
     > "/var/log/stereum-installer.log" 2>&1
 
   rm "$stereum_installer_file"
@@ -183,6 +184,30 @@ function dialog_path() {
   dialog --clear
 }
 
+function dialog_auto_updates() {
+  dialog --backtitle "$dialog_backtitle" \
+    --title "Auto Updates" \
+    --yesno "Do you want to install updates automatically?" \
+    0 0
+  choice=$?
+
+  if [ $choice == 0 ]; then
+    auto_update_check_updates="true"
+    auto_update_install_updates="true"
+
+    auto_update_lane=$(dialog --backtitle "$dialog_backtitle" \
+      --title "Auto Updates" \
+      --menu "Please choose the lane you want to receive updates of:" 0 0 0 \
+        "stable" "Install only stable updates (highly recommended!)" \
+        "rc" "Install release candidates (this can break your setup!)" \
+      3>&1 1>&2 2>&3)
+  else
+    auto_update_check_updates="false"
+    auto_update_install_updates="false"
+    auto_update_lane="stable"
+  fi
+}
+
 function dialog_welcome() {
   dialog --backtitle "$dialog_backtitle" \
     --title "Welcome!" \
@@ -205,6 +230,7 @@ dialog_path
 dialog_client
 dialog_network
 dialog_overrides
+dialog_auto_updates
 dialog_install_progress
 dialog_installation_successful
 
