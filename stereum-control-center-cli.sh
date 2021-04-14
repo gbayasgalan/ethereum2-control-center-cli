@@ -63,15 +63,15 @@ function dialog_import_wallet() {
 function dialog_update() {
   choice_update_version_tag=$(dialog --backtitle "$dialog_backtitle" \
     --title "$dialog_title" \
-    --inputbox "What version do you want to use?" 9 60 "" \
+    --inputbox "What version do you want to use?" 9 60 "$update_available" \
     3>&1 1>&2 2>&3)
 
   (
     echo "XXX"; echo "Downloading new version..."; echo "XXX"
-    echo "10"; ansible-playbook -e stereum_version_tag="$choice_update_version_tag" -v "${e2a_install_path}/stop-and-update.yaml" > /dev/null 2>&1
+    echo "10"; ansible-playbook -e stereum_version_tag_override="$choice_update_version_tag" -v "${e2a_install_path}/stop-and-update.yaml" > /dev/null 2>&1
 
     echo "XXX"; echo "Configuring..."; echo "XXX"
-    echo "60"; ansible-playbook -e stereum_version_tag="$choice_update_version_tag" -v "${e2a_install_path}/finish-update.yaml" > /dev/null 2>&1
+    echo "60"; ansible-playbook -v "${e2a_install_path}/finish-update.yaml" > /dev/null 2>&1
 
     echo "XXX"; echo "Done!"; echo "XXX"
     echo "100"; sleep 1
