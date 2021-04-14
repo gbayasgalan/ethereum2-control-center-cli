@@ -39,7 +39,7 @@ function install_stereum() {
     -e setup="$e2dc_client" \
     -e setup_override="$e2dc_override" \
     -e eth1_node="$eth1_node" \
-    -e "{ \"auto_update\": { \"check_updates\": \"$auto_update_check_updates\", \"install_updates\": \"$auto_update_install_updates\", \"lane\": \"$auto_update_lane\" } }" \
+    -e "{ \"update\": { \"lane\": \"$auto_update_lane\", \"unattended\": { \"check\": \"$auto_update_check_updates\", \"install\": \"$auto_update_install_updates\" } } }" \
     -e stereum_version_tag="$stereum_version_tag" \
     > "/var/log/stereum-installer.log" 2>&1
 
