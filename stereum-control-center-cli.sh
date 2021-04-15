@@ -21,6 +21,9 @@ function dialog_import_wallet() {
     --inputbox "Please enter the mnemonic of the validator_keys:" 9 60 "" \
     3>&1 1>&2 2>&3)
 
+  dialog --backtitle "$dialog_backtitle" \
+    --infobox "Importing keys..." 3 19
+
   ansible-playbook \
     -e validator_number="$choice_validator_number" \
     -e validator_mnemonic="$choice_validator_mnemonic" \
@@ -239,14 +242,31 @@ function dialog_exit_validator() {
       --inputbox "Please enter validator's pubkey ( e. g: 0x1234abcd..... ):" 9 60 "" \
       3>&1 1>&2 2>&3)
 
+    dialog --backtitle "$dialog_backtitle" \
+      --infobox "exiting validator account..." 0 0
+
     ansible-playbook \
       -e validator_pubkey="$choice_validator_pubkey" \
       -v \
       "${e2a_install_path}/exit-validator-accounts.yaml" \
       > /dev/null 2>&1
+  
+  elif [ "$setup" == "teku" ]; then
+    choice_validator_keystore_file=$(dialog --backtitle "$dialog_backtitle" \
+      --title "$dialog_title" \
+      --inputbox "Please enter the name of keystore file without '.json' extension (e.g: keystore-m_12345_1234_0_0_0-1234567890 ) :" 9 60 "" \
+      3>&1 1>&2 2>&3)
 
-  else
+    dialog --backtitle "$dialog_backtitle" \
+      --infobox "exiting validator account..." 0 0
 
+    ansible-playbook \
+      -e validator_keystore="$choice_validator_keystore_file" \
+      -v \
+      "${e2a_install_path}/exit-validator-accounts.yaml" \
+      > /dev/null 2>&1
+
+  elif [ "$setup" == "lighthouse" ]; then
     choice_validator_keystore_file=$(dialog --backtitle "$dialog_backtitle" \
       --title "$dialog_title" \
       --inputbox "Please enter the name of keystore file (e.g: keystore-m_12345_1234_0_0_0-1234567890.json ) :" 9 60 "" \
