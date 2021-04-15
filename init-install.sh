@@ -186,7 +186,7 @@ function dialog_path() {
 
 function dialog_auto_updates() {
   dialog --backtitle "$dialog_backtitle" \
-    --title "Auto Updates" \
+    --title "Unattended Automized Updates" \
     --yesno "Do you want to install updates automatically?" \
     0 0
   choice=$?

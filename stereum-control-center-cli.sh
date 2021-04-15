@@ -90,6 +90,38 @@ function dialog_update() {
   dialog_main
 }
 
+function dialog_unattended_update() {
+  dialog --backtitle "$dialog_backtitle" \
+    --title "Unattended Automized Updates" \
+    --yesno "Do you want to install updates automatically?" \
+    0 0
+  choice=$?
+
+  if [ $choice == 0 ]; then
+    auto_update_check_updates="true"
+    auto_update_install_updates="true"
+
+    auto_update_lane=$(dialog --backtitle "$dialog_backtitle" \
+      --title "Unattended Automized Updates" \
+      --menu "Please choose the lane you want to receive updates of:" 0 0 0 \
+        "stable" "Install only stable updates (highly recommended!)" \
+        "rc" "Install release candidates (this can break your setup!)" \
+      3>&1 1>&2 2>&3)
+  else
+    auto_update_check_updates="false"
+    auto_update_install_updates="false"
+    auto_update_lane="stable"
+  fi
+
+  ansible-playbook \
+    -e "{ \"update\": { \"lane\": \"$auto_update_lane\", \"unattended\": { \"check\": $auto_update_check_updates, \"install\": $auto_update_install_updates } } }" \
+    -v \
+    "${e2a_install_path}/configure-autoupdate.yaml" \
+    > /dev/null 2>&1
+
+  dialog_main
+}
+
 function dialog_graffiti() {
   choice_graffiti=$(dialog --backtitle "$dialog_backtitle" \
     --title "$dialog_title" \
@@ -245,6 +277,7 @@ function dialog_main() {
     --menu "" 0 0 0 \
     "import-wallet" "Import a wallet of launchpad.ethereum.org" \
     "update" "Update your OS and Stereum Node" \
+    "unattended-update" "Configure unattended automized updates" \
     "graffiti" "Set graffiti for staking" \
     "api-bind-addr" "Bind address for apis (default: 127.0.0.1)" \
     "restart-host" "Restart the server" \
@@ -261,6 +294,8 @@ function dialog_main() {
     dialog_import_wallet
   elif [ "$choice_main" == "update" ]; then
     dialog_update
+  elif [ "$choice_main" == "unattended-update" ]; then
+    dialog_unattended_update
   elif [ "$choice_main" == "graffiti" ]; then
     dialog_graffiti
   elif [ "$choice_main" == "api-bind-addr" ]; then
@@ -279,7 +314,8 @@ function dialog_main() {
     clear
     exit 0
   fi
-}
+
+}}
 
 function check_config() {
   if [[ -f "$stereum_config_file_path" ]]; then
