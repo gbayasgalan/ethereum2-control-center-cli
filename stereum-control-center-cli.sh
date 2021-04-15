@@ -314,8 +314,7 @@ function dialog_main() {
     clear
     exit 0
   fi
-
-}}
+}
 
 function check_config() {
   if [[ -f "$stereum_config_file_path" ]]; then
