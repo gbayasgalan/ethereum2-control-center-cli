@@ -291,6 +291,25 @@ function dialog_exit_validator() {
   dialog_main
 }
 
+function dialog_delete_validator() {
+
+    choice_validator_pubkey=$(dialog --backtitle "$dialog_backtitle" \
+      --title "$dialog_title" \
+      --inputbox "Please enter the public key of validator account( e. g: 0x1234abcd..... ):" 9 60 "" \
+      3>&1 1>&2 2>&3)
+
+    dialog --backtitle "$dialog_backtitle" \
+      --infobox "deleting validator account..." 0 0
+
+    ansible-playbook \
+      -e validator_pubkey="$choice_validator_pubkey" \
+      -v \
+      "${e2a_install_path}/delete-validator-accounts.yaml" \
+      > /dev/null 2>&1
+
+  dialog_main
+}
+
 function dialog_main() {
   choice_main=$(dialog --backtitle "$dialog_backtitle" \
     --title "$dialog_title - Main Menu" \
@@ -305,6 +324,7 @@ function dialog_main() {
     "geth-prune" "Prune geth to reallocate disk space" \
     "port-list" "List used ports" \
     "exit-account" "Voluntary exit of validator" \
+    "delete-account" "Safely remove a validator account" \
     "quit" "Quit the Stereum Control Center" \
      3>&1 1>&2 2>&3)
 
@@ -329,7 +349,9 @@ function dialog_main() {
   elif [ "$choice_main" == "port-list" ]; then
     dialog_port_list
   elif [ "$choice_main" == "exit-account" ]; then
-    dialog_exit_validator  
+    dialog_exit_validator
+  elif [ "$choice_main" == "delete-account" ]; then
+    dialog_delete_validator   
   elif [ "$choice_main" == "quit" ]; then
     clear
     exit 0
