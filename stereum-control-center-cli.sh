@@ -292,7 +292,7 @@ function dialog_exit_validator() {
 }
 
 function dialog_delete_validator() {
-  if [[ "$setup" == "lodestar" || "$setup" == "prysm" || "$setup" == "nimbus" ]]; then
+  if [[ "$setup" == "lodestar" || "$setup" == "prysm" || "$setup" == "nimbus" || "$setup" == "lighthouse" ]]; then
     choice_validator_pubkey=$(dialog --backtitle "$dialog_backtitle" \
       --title "$dialog_title" \
       --inputbox "Please enter the public key of validator account( e. g: 0x1234abcd..... ):" 9 60 "" \
