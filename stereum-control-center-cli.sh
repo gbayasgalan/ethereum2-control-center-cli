@@ -331,7 +331,7 @@ function dialog_main() {
     --title "$dialog_title - Main Menu" \
     --menu "" 0 0 0 \
     "import-wallet" "Import a wallet of launchpad.ethereum.org" \
-    "update" "Update your OS and Stereum Node" \
+    "update" "Update your Stereum Node Setup" \
     "unattended-update" "Configure unattended automized updates" \
     "graffiti" "Set graffiti for staking" \
     "api-bind-addr" "Bind address for apis (default: 127.0.0.1)" \
