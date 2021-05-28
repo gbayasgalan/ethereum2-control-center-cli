@@ -38,7 +38,7 @@ function install_stereum() {
     -e network="$e2dc_network" \
     -e setup="$e2dc_client" \
     -e setup_override="$e2dc_override" \
-    -e eth1_node="$eth1_node" \
+    -e eth1_nodes="[\"$eth1_node\"]" \
     -e "{ \"update\": { \"lane\": \"$auto_update_lane\", \"unattended\": { \"check\": $auto_update_check_updates, \"install\": $auto_update_install_updates } } }" \
     -e stereum_version_tag="$stereum_version_tag" \
     > "/var/log/stereum-installer.log" 2>&1
