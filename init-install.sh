@@ -29,19 +29,24 @@ function check_privileges() {
 
 function install_stereum() {
   stereum_installer_file="/tmp/stereum-installer-$stereum_version_tag.run"
+	
+  if [ $exported_file_path="" ]; then
+    wget -q -O "$stereum_installer_file" "https://stereum.net/downloads/init-setup-$stereum_version_tag.run"
 
-  wget -q -O "$stereum_installer_file" "https://stereum.net/downloads/init-setup-$stereum_version_tag.run"
+    chmod +x "$stereum_installer_file"
+    "$stereum_installer_file" \
+      -e install_path="$install_path" \
+      -e network="$e2dc_network" \
+      -e setup="$e2dc_client" \
+      -e setup_override="$e2dc_override" \
+      -e "{ \"connectivity\": { \"eth1_nodes\": [\"$eth1_node\"]}, \"update\": { \"lane\": \"$auto_update_lane\", \"unattended\": { \"check\": $auto_update_check_updates, \"install\": $auto_update_install_updates } } }" \
+      -e stereum_version_tag="$stereum_version_tag" \
+  else
+    source "$stereum_installer_file" "echo '$exported_file_password' | gpg -d --output /etc/stereum/ethereum.yaml --batch --yes --passphrase-fd 0 '$exported_file_path/exported_config.gpg'" 
+    chmod +x "$stereum_installer_file" 
+  fi	  
 
-  chmod +x "$stereum_installer_file"
-  "$stereum_installer_file" \
-    -e install_path="$install_path" \
-    -e network="$e2dc_network" \
-    -e setup="$e2dc_client" \
-    -e setup_override="$e2dc_override" \
-    -e "{ \"connectivity\": { \"eth1_nodes\": [\"$eth1_node\"]}, \"update\": { \"lane\": \"$auto_update_lane\", \"unattended\": { \"check\": $auto_update_check_updates, \"install\": $auto_update_install_updates } } }" \
-    -e stereum_version_tag="$stereum_version_tag" \
-    > "/var/log/stereum-installer.log" 2>&1
-
+  > "/var/log/stereum-installer.log" 2>&1
   rm "$stereum_installer_file"
 }
 
@@ -222,9 +227,35 @@ function dialog_welcome() {
   fi
 }
 
+function dialog_import_config() {
+  dialog --backtitle "$dialog_backtitle" \
+    --title "Import Configuration" \
+    --yesno "Do you want to import saved Configuration" \
+    0 0
+  choice=$?
+
+  if [ $choice == 0 ]; then
+    exported_file_path=$(dialog --backtitle "$dialog_backtitle" \
+      --title "The Path to exported file" \
+      --inputbox "Please enter the path to exported file" \
+      0 0 \
+      "/tmp/exported-config/config" \
+      3>&1 1>&2 2>&3)
+
+    exported_file_password=$(dialog --backtitle "$dialog_backtitle" \
+      --title "Password for exported file" \
+      --inputbox "Please enter the password for exported file" \
+      0 0 \
+      3>&1 1>&2 2>&3)
+  fi	  
+
+  dialog --clear
+}
+
 check_privileges
 check_dependencies
 dialog_welcome
+dialog_import_config
 dialog_path
 dialog_client
 dialog_network
