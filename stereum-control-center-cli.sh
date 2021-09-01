@@ -326,6 +326,24 @@ function dialog_delete_validator() {
   dialog_main
 }
 
+function dialog_export_config() {
+  choice_config_password=$(dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_title" \
+    --inputbox "Please enter the password for exporting configuration file:" 9 60 "" \
+    3>&1 1>&2 2>&3)
+
+   dialog --backtitle "$dialog_backtitle" \
+    --infobox "importing configuration..." 0 0
+
+   ansible-playbook \
+    -e export_config_password="$choice_config_password" \
+    -v \
+    "${e2a_install_path}/export-config.yaml" \
+    > /dev/null 2>&1
+
+ dialog_main
+}
+
 function dialog_main() {
   choice_main=$(dialog --backtitle "$dialog_backtitle" \
     --title "$dialog_title - Main Menu" \
@@ -341,6 +359,7 @@ function dialog_main() {
     "port-list" "List used ports" \
     "exit-account" "Voluntary exit of validator" \
     "delete-account" "Safely remove a validator account" \
+    "export-config" "Export currently running configuration" \
     "quit" "Quit the Stereum Control Center" \
      3>&1 1>&2 2>&3)
 
@@ -368,6 +387,8 @@ function dialog_main() {
     dialog_exit_validator
   elif [ "$choice_main" == "delete-account" ]; then
     dialog_delete_validator   
+  elif [ "$choice_main" == "export-config" ]; then
+    dialog_export_config  
   elif [ "$choice_main" == "quit" ]; then
     clear
     exit 0
