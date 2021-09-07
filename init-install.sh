@@ -29,11 +29,12 @@ function check_privileges() {
 
 function install_stereum() {
   stereum_installer_file="/tmp/stereum-installer-$stereum_version_tag.run"
-	
-  if [ $exported_file_path="" ]; then
-    wget -q -O "$stereum_installer_file" "https://stereum.net/downloads/init-setup-$stereum_version_tag.run"
 
-    chmod +x "$stereum_installer_file"
+  wget -q -O "$stereum_installer_file" "https://stereum.net/downloads/init-setup-$stereum_version_tag.run"
+
+  chmod +x "$stereum_installer_file"
+
+  if [ $choice_import_config != 0 ]; then
     "$stereum_installer_file" \
       -e install_path="$install_path" \
       -e network="$e2dc_network" \
@@ -41,13 +42,32 @@ function install_stereum() {
       -e setup_override="$e2dc_override" \
       -e "{ \"connectivity\": { \"eth1_nodes\": [\"$eth1_node\"]}, \"update\": { \"lane\": \"$auto_update_lane\", \"unattended\": { \"check\": $auto_update_check_updates, \"install\": $auto_update_install_updates } } }" \
       -e stereum_version_tag="$stereum_version_tag" \
-  else
-    source "$stereum_installer_file" "echo '$exported_file_password' | gpg -d --output /etc/stereum/ethereum.yaml --batch --yes --passphrase-fd 0 '$exported_file_path/exported_config.gpg'" 
-    chmod +x "$stereum_installer_file" 
-  fi	  
+      > "/var/log/stereum-installer.log" 2>&1
 
-  > "/var/log/stereum-installer.log" 2>&1
+  elif [ $choice_import_config == 0 ]; then
+    apt-get install unzip -y
+    unzip -o "$exported_config_path" -d /tmp
+    echo "$exported_config_password" | gpg -d --output /tmp/exported-config/ethereum2.yaml --batch --yes --passphrase-fd 0 /tmp/exported-config/ethereum2.yaml.gpg
+    chmod -R 755 /tmp/exported-config
+
+    "$stereum_installer_file" \
+      -e install_path="$install_path" \
+      -e network="$(grep 'network:' /tmp/exported-config/ethereum2.yaml | sed 's/^.*: //')" \
+      -e setup="$(grep 'setup:' /tmp/exported-config/ethereum2.yaml | sed 's/^.*: //')" \
+      -e setup_override="$(grep 'setup_override:' /tmp/exported-config/ethereum2.yaml | sed 's/^.*: //')" \
+      -e "{ \"connectivity\": { \"eth1_nodes\": [\"$eth1_node\"]}, \"update\": { \"lane\": \"$auto_update_lane\", \"unattended\": { \"check\": $auto_update_check_updates, \"install\": $auto_update_install_updates } } }" \
+      -e stereum_version_tag="$(grep 'stereum_version_tag:' /tmp/exported-config/ethereum2.yaml | sed 's/^.*: //')" \
+      > "/var/log/stereum-installer.log" 2>&1
+  fi
+
   rm "$stereum_installer_file"
+
+  if [ $choice_import_validator != 0 ]; then
+    rm -rf /tmp/exported-config
+
+  elif [ $choice_import_validator == 0 ]; then
+    importing_validator_number="$(ls -lR /tmp/exported-config/keystore-*.json | wc -l)"
+  fi
 }
 
 function dialog_installation_successful() {
@@ -232,22 +252,71 @@ function dialog_import_config() {
     --title "Import Configuration" \
     --yesno "Do you want to import saved Configuration" \
     0 0
-  choice=$?
+  choice_import_config=$?
 
-  if [ $choice == 0 ]; then
-    exported_file_path=$(dialog --backtitle "$dialog_backtitle" \
-      --title "The Path to exported file" \
-      --inputbox "Please enter the path to exported file" \
+  if [ $choice_import_config == 0 ]; then
+    dialog --backtitle "$dialog_backtitle" \
+      --title "Import Configuration" \
+      --yesno "Do you want to import with validators" \
+      0 0
+    choice_import_validator=$?
+
+    exported_config_path=$(dialog --backtitle "$dialog_backtitle" \
+      --title "Import Configuration" \
+      --inputbox "Please enter the PATH to the importing file (e. g: /tmp/exported-config.zip)" \
       0 0 \
-      "/tmp/exported-config/config" \
+      "/tmp/exported-config" \
       3>&1 1>&2 2>&3)
 
-    exported_file_password=$(dialog --backtitle "$dialog_backtitle" \
-      --title "Password for exported file" \
-      --inputbox "Please enter the password for exported file" \
+    exported_config_password=$(dialog --backtitle "$dialog_backtitle" \
+      --title "Import Configuration" \
+      --inputbox "Please enter the PASSWORD for exported configuration File ( The password used to export configuration )" \
       0 0 \
       3>&1 1>&2 2>&3)
-  fi	  
+
+    if [ $choice_import_validator == 0 ]; then
+      exported_validator_password=$(dialog --backtitle "$dialog_backtitle" \
+        --title "" \
+        --inputbox "Please enter the PASSWORD for exported Validators" \
+        0 0 \
+        3>&1 1>&2 2>&3)
+    fi
+  fi
+
+  dialog --clear
+}
+
+function dialog_import_validator() {
+  if [ "$(grep 'setup:' /tmp/exported-config/ethereum2.yaml | sed 's/^.*: //')" == "multiclient" ]; then
+    choice_validator_mnemonic=$(dialog --backtitle "$dialog_backtitle" \
+    --title "$dialog_title" \
+    --inputbox "Please enter the mnemonic of the importing 'Validator Keys':" 9 60 "" \
+    3>&1 1>&2 2>&3)
+
+    dialog --backtitle "$dialog_backtitle" \
+      --infobox "importing 'Exported-Validator-Keys'..." 0 0
+
+    ansible-playbook \
+      -e validator_number="$importing_validator_number" \
+      -e validator_mnemonic="$choice_validator_mnemonic" \
+      -v \
+      "${install_path}/ethereum2-ansible/import-validator-accounts.yaml" \
+      > /dev/null 2>&1
+
+  else
+
+    dialog --backtitle "$dialog_backtitle" \
+      --infobox "importing 'Exported-Validator-Keys'..." 0 0
+
+    ansible-playbook \
+      -e validator_keys_path="/tmp/exported-config" \
+      -e validator_password="$exported_validator_password" \
+      -v \
+      "${install_path}/ethereum2-ansible/import-validator-accounts.yaml" \
+      > /dev/null 2>&1
+  fi
+
+  rm -rf /tmp/exported-config
 
   dialog --clear
 }
@@ -256,13 +325,21 @@ check_privileges
 check_dependencies
 dialog_welcome
 dialog_import_config
-dialog_path
-dialog_client
-dialog_network
-dialog_overrides
-dialog_auto_updates
-dialog_install_progress
-dialog_installation_successful
+if [ $choice_import_config == 0 ]; then
+  dialog_path
+  dialog_install_progress
+  if [ $choice_import_validator == 0 ]; then
+    dialog_import_validator
+  fi
+  dialog_installation_successful
+else
+  dialog_path
+  dialog_client
+  dialog_network
+  dialog_overrides
+  dialog_auto_updates
+  dialog_install_progress
+  dialog_installation_successful
+fi
 
 # EOF
-
