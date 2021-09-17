@@ -47,7 +47,7 @@ function install_stereum() {
   elif [ $choice_import_config == 0 ]; then
     apt-get install unzip -y
     unzip -o "$exported_config_path" -d /tmp
-    echo "$exported_config_password" | gpg -d --output /tmp/exported-config/ethereum2.yaml --batch --yes --passphrase-fd 0 /tmp/exported-config/ethereum2.yaml.gpg
+    echo "$exported_config_password" | gpg -d --output /tmp/exported-config/ethereum2.yaml --batch --yes --passphrase-fd 0 /tmp/exported-config/exported-config.gpg
     chmod -R 755 /tmp/exported-config
 
     "$stereum_installer_file" \
