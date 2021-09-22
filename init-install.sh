@@ -20,7 +20,7 @@ function check_dependencies() {
 
 function check_privileges() {
   echo "Checking privileges..."
-  if [[ $EUID -ne 0 && "$(ps -o comm= | sed -n '1p')" -ne "su" ]]; then
+  if [[ $EUID -ne 0 && "$(ps -o comm= | sed -n '1p')" != "su" ]]; then
     clear
     echo "This script must be run as root or with sudo."
     exit 1
@@ -34,7 +34,7 @@ function install_stereum() {
 
   chmod +x "$stereum_installer_file"
 
-  if [ $choice_import_config != 0 ]; then
+  if [ "$choice_import_config" != 0 ]; then
     "$stereum_installer_file" \
       -e install_path="$install_path" \
       -e network="$e2dc_network" \
@@ -44,7 +44,7 @@ function install_stereum() {
       -e stereum_version_tag="$stereum_version_tag" \
       > "/var/log/stereum-installer.log" 2>&1
 
-  elif [ $choice_import_config == 0 ]; then
+  elif [ "$choice_import_config" == 0 ]; then
     apt-get install unzip -y
     unzip -o "$exported_config_path" -d /tmp
     echo "$exported_config_password" | gpg -d --output /tmp/exported-config/ethereum2.yaml --batch --yes --passphrase-fd 0 /tmp/exported-config/exported-config.gpg
@@ -62,11 +62,11 @@ function install_stereum() {
 
   rm "$stereum_installer_file"
 
-  if [ $choice_import_validator != 0 ]; then
+  if [ "$choice_import_validator" != 0 ]; then
     rm -rf /tmp/exported-config
 
-  elif [ $choice_import_validator == 0 ]; then
-    importing_validator_number="$(ls -lR /tmp/exported-config/keystore-*.json | wc -l)"
+  elif [ "$choice_import_validator" == 0 ]; then
+    importing_validator_number="$(find /tmp/exported-config/keystore-*.json | wc -l)"
   fi
 }
 
@@ -162,7 +162,7 @@ function dialog_external_eth1() {
 }
 
 function dialog_overrides() {
-  dialog_overrides_$e2dc_client
+  dialog_overrides_"$e2dc_client"
 
   if [ "$e2dc_override" = "no-geth" ] || [ "$e2dc_override" = "beacon-validator" ]; then
     dialog_external_eth1
@@ -289,7 +289,7 @@ function dialog_import_config() {
 function dialog_import_validator() {
   if [ "$(grep 'setup:' /tmp/exported-config/ethereum2.yaml | sed 's/^.*: //')" == "multiclient" ]; then
     choice_validator_mnemonic=$(dialog --backtitle "$dialog_backtitle" \
-    --title "$dialog_title" \
+    --title "Import Validators" \
     --inputbox "Please enter the mnemonic of the importing 'Validator Keys':" 9 60 "" \
     3>&1 1>&2 2>&3)
 
