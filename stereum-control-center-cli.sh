@@ -10,7 +10,7 @@ dialog_title="Stereum Control Center"
 stereum_config_file_path=/etc/stereum/ethereum2.yaml
 
 function dialog_import_wallet() {
-  if [ "$setup" == "multiclient" ]; then
+  if [ "$(setup)" == "multiclient" ]; then
   choice_validator_number=$(dialog --backtitle "$dialog_backtitle" \
     --title "$dialog_title" \
     --inputbox "Please enter the number of the validator_keys:" 9 60 "" \
@@ -28,7 +28,7 @@ function dialog_import_wallet() {
     -e validator_number="$choice_validator_number" \
     -e validator_mnemonic="$choice_validator_mnemonic" \
     -v \
-    "${e2a_install_path}/import-validator-accounts.yaml" \
+    "$(e2a_install_path)/import-validator-accounts.yaml" \
     > /dev/null 2>&1
 
   else
@@ -50,7 +50,7 @@ function dialog_import_wallet() {
     -e validator_keys_path="$choice_launchpad_wallet_path" \
     -e validator_password="$choice_launchpad_wallet_password" \
     -v \
-    "${e2a_install_path}/import-validator-accounts.yaml" \
+    "$(e2a_install_path)/import-validator-accounts.yaml" \
     > /dev/null 2>&1
   fi
 
@@ -66,15 +66,15 @@ function dialog_import_wallet() {
 function dialog_update() {
   choice_update_version_tag=$(dialog --backtitle "$dialog_backtitle" \
     --title "$dialog_title" \
-    --inputbox "What version do you want to use?" 9 60 "$update_available" \
+    --inputbox "What version do you want to use?" 9 60 "$(update_available)" \
     3>&1 1>&2 2>&3)
 
   (
     echo "XXX"; echo "Downloading new version..."; echo "XXX"
-    echo "10"; ansible-playbook -e stereum_version_tag_override="$choice_update_version_tag" -v "${e2a_install_path}/stop-and-update.yaml" > /dev/null 2>&1
+    echo "10"; ansible-playbook -e stereum_version_tag_override="$choice_update_version_tag" -v "$(e2a_install_path)/stop-and-update.yaml" > /dev/null 2>&1
 
     echo "XXX"; echo "Configuring..."; echo "XXX"
-    echo "60"; ansible-playbook -v --inventory="stereumnodes," --connection=local "${e2a_install_path}/finish-update.yaml" > /dev/null 2>&1
+    echo "60"; ansible-playbook -v --inventory="stereumnodes," --connection=local "$(e2a_install_path)/finish-update.yaml" > /dev/null 2>&1
 
     echo "XXX"; echo "Done!"; echo "XXX"
     echo "100"; sleep 1
@@ -119,7 +119,7 @@ function dialog_unattended_update() {
   ansible-playbook \
     -e "{ \"update\": { \"lane\": \"$auto_update_lane\", \"unattended\": { \"check\": $auto_update_check_updates, \"install\": $auto_update_install_updates } } }" \
     -v \
-    "${e2a_install_path}/configure-autoupdate.yaml" \
+    "$(e2a_install_path)/configure-autoupdate.yaml" \
     > /dev/null 2>&1
 
   dialog_main
@@ -137,7 +137,7 @@ function dialog_graffiti() {
   ansible-playbook \
     -e e2dc_graffiti_updated="$choice_graffiti" \
     -v \
-    "${e2a_install_path}/set-graffiti.yaml" \
+    "$(e2a_install_path)/set-graffiti.yaml" \
     > /dev/null 2>&1
 
   dialog_main
@@ -155,7 +155,7 @@ function dialog_api_bind_addr() {
   ansible-playbook \
     -e e2dc_api_bind_address_updated="$choice_api_bind_addr" \
     -v \
-    "${e2a_install_path}/set-api-bind-address.yaml" \
+    "$(e2a_install_path)/set-api-bind-address.yaml" \
     > /dev/null 2>&1
 
   dialog_main
@@ -180,7 +180,7 @@ function dialog_restart_host() {
 function dialog_restart_services() {
   (
     echo "XXX"; echo "Restarting services..."; echo "XXX"
-    echo "10"; ansible-playbook -v "${e2a_install_path}/restart-services.yaml" > /dev/null 2>&1
+    echo "10"; ansible-playbook -v "$(e2a_install_path)/restart-services.yaml" > /dev/null 2>&1
 
     echo "XXX"; echo "Done!"; echo "XXX"
     echo "100"; sleep 1
@@ -210,7 +210,7 @@ function dialog_geth_prune() {
     dialog --clear
     dialog_main
   else
-    ansible-playbook -v "${e2a_install_path}/geth-prune.yaml" > /dev/null 2>&1 &
+    ansible-playbook -v "$(e2a_install_path)/geth-prune.yaml" > /dev/null 2>&1 &
 
     dialog --backtitle "$dialog_backtitle" \
       --title "$dialog_title" \
@@ -225,10 +225,10 @@ function dialog_port_list() {
   dialog --backtitle "$dialog_backtitle" \
     --infobox "Reading services and ports..." 3 34
 
-  ansible-playbook -v "${e2a_install_path}/list-ports.yaml" > /dev/null 2>&1
+  ansible-playbook -v "$(e2a_install_path)/list-ports.yaml" > /dev/null 2>&1
 
   dialog --backtitle "$dialog_backtitle" \
-    --textbox "${e2dc_install_path}/open-ports-list.txt" 0 0
+    --textbox "$(e2dc_install_path)/open-ports-list.txt" 0 0
 
   dialog --clear
 
@@ -236,7 +236,7 @@ function dialog_port_list() {
 }
 
 function dialog_exit_validator() {
-  if [[ "$setup" == "lodestar" || "$setup" == "prysm" || "$setup" == "nimbus" ]]; then
+  if [[ "$(setup)" == "lodestar" || "$(setup)" == "prysm" || "$(setup)" == "nimbus" ]]; then
     choice_validator_pubkey=$(dialog --backtitle "$dialog_backtitle" \
       --title "$dialog_title" \
       --inputbox "Please enter validator's pubkey ( e. g: 0x1234abcd..... ):" 9 60 "" \
@@ -248,10 +248,10 @@ function dialog_exit_validator() {
     ansible-playbook \
       -e validator_pubkey="$choice_validator_pubkey" \
       -v \
-      "${e2a_install_path}/exit-validator-accounts.yaml" \
+      "$(e2a_install_path)/exit-validator-accounts.yaml" \
       > /dev/null 2>&1
   
-  elif [ "$setup" == "teku" ]; then
+  elif [ "$(setup)" == "teku" ]; then
     choice_validator_keystore_file=$(dialog --backtitle "$dialog_backtitle" \
       --title "$dialog_title" \
       --inputbox "Please enter the name of keystore file without '.json' extension (e.g: keystore-m_12345_1234_0_0_0-1234567890 ) :" 9 60 "" \
@@ -263,10 +263,10 @@ function dialog_exit_validator() {
     ansible-playbook \
       -e validator_keystore="$choice_validator_keystore_file" \
       -v \
-      "${e2a_install_path}/exit-validator-accounts.yaml" \
+      "$(e2a_install_path)/exit-validator-accounts.yaml" \
       > /dev/null 2>&1
 
-  elif [ "$setup" == "lighthouse" ]; then
+  elif [ "$(setup)" == "lighthouse" ]; then
     choice_validator_keystore_file=$(dialog --backtitle "$dialog_backtitle" \
       --title "$dialog_title" \
       --inputbox "Please enter the name of keystore file (e.g: keystore-m_12345_1234_0_0_0-1234567890.json ) :" 9 60 "" \
@@ -284,7 +284,7 @@ function dialog_exit_validator() {
       -e validator_keystore="$choice_validator_keystore_file" \
       -e validator_password="$choice_validator_password" \
       -v \
-      "${e2a_install_path}/exit-validator-accounts.yaml" \
+      "$(e2a_install_path)/exit-validator-accounts.yaml" \
       > /dev/null 2>&1
   fi
 
@@ -292,7 +292,7 @@ function dialog_exit_validator() {
 }
 
 function dialog_delete_validator() {
-  if [[ "$setup" == "lodestar" || "$setup" == "prysm" || "$setup" == "nimbus" || "$setup" == "lighthouse" ]]; then
+  if [[ "$(setup)" == "lodestar" || "$(setup)" == "prysm" || "$(setup)" == "nimbus" || "$(setup)" == "lighthouse" ]]; then
     choice_validator_pubkey=$(dialog --backtitle "$dialog_backtitle" \
       --title "$dialog_title" \
       --inputbox "Please enter the public key of validator account( e. g: 0x1234abcd..... ):" 9 60 "" \
@@ -304,10 +304,10 @@ function dialog_delete_validator() {
     ansible-playbook \
       -e validator_pubkey="$choice_validator_pubkey" \
       -v \
-      "${e2a_install_path}/delete-validator-accounts.yaml" \
+      "$(e2a_install_path)/delete-validator-accounts.yaml" \
       > /dev/null 2>&1
 
-  elif [ "$setup" == "teku" ]; then
+  elif [ "$(setup)" == "teku" ]; then
     choice_validator_keystore_file=$(dialog --backtitle "$dialog_backtitle" \
       --title "$dialog_title" \
       --inputbox "Please enter the name of keystore file without '.json' extension (e.g: keystore-m_12345_1234_0_0_0-1234567890 ) :" 9 60 "" \
@@ -319,7 +319,7 @@ function dialog_delete_validator() {
     ansible-playbook \
       -e validator_keystore="$choice_validator_keystore_file" \
       -v \
-      "${e2a_install_path}/delete-validator-accounts.yaml" \
+      "$(e2a_install_path)/delete-validator-accounts.yaml" \
       > /dev/null 2>&1
   fi
 
@@ -338,7 +338,7 @@ function dialog_export_config() {
    ansible-playbook \
     -e export_config_password="$choice_config_password" \
     -v \
-    "${e2a_install_path}/export-config.yaml" \
+    "$(e2a_install_path)/export-config.yaml" \
     > /dev/null 2>&1
 
  dialog_main
@@ -396,15 +396,16 @@ function dialog_main() {
 }
 
 function check_config() {
-  if [[ -f "$stereum_config_file_path" ]]; then
-    echo "Found config $stereum_config_file_path"
+  if [[ -f "$(stereum_config_file_path)" ]]; then
+    echo "Found config $(stereum_config_file_path)"
 
     script_relative_path="$(dirname "$(readlink -f "$0")")"
-
+    
+    # shellcheck source=./helper/yaml.sh
     source "${script_relative_path}/helper/yaml.sh"
     create_variables "$stereum_config_file_path"
 
-    stereum_version_tag=$(git -C "$e2ccc_install_path" describe --tags)
+    stereum_version_tag=$(git -C "$(e2ccc_install_path)" describe --tags)
     dialog_backtitle="Stereum Node Control Center - $stereum_version_tag"
   else
     echo "No config found at $stereum_config_file_path"
