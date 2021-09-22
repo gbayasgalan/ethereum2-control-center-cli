@@ -401,8 +401,6 @@ function check_config() {
 
     script_relative_path="$(dirname "$(readlink -f "$0")")"
     
-    # shellcheck disable=SC1091
-    # shellcheck source=./helper/yaml.sh
     source "${script_relative_path}/helper/yaml.sh"
     create_variables "$stereum_config_file_path"
 
